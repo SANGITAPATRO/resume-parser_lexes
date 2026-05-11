@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeIQ — Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header style="background:#fff;border-bottom:1px solid #E2E8F0;flex-shrink:0;z-index:10;">
+  <div style="padding:0 20px;height:52px;display:flex;align-items:center;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:30px;height:30px;background:#4F6EF7;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+          <line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
+      </div>
+      <span style="font-weight:700;font-size:1rem;color:#1A202C;">ResumeIQ</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MAIN ══ -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- ── UPLOAD SCREEN ── -->
+  <section id="sec-upload" style="align-items:center;justify-content:center;padding:32px 16px;">
+    <div style="width:100%;max-width:560px;text-align:center;">
+      <h1 style="font-size:1.6rem;font-weight:700;color:#1A202C;margin-bottom:8px;">Parse Resume</h1>
+      <p style="color:#718096;font-size:.9rem;margin-bottom:24px;">Upload a resume — parsing starts automatically</p>
+
+      <div id="dropzone" style="background:#fff;padding:40px 28px;text-align:center;cursor:pointer;"
+           onclick="document.getElementById('fi').click()">
+        <div style="width:52px;height:52px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round">
+            <polyline points="16 16 12 12 8 16"/>
+            <line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+          </svg>
+        </div>
+        <p style="font-weight:600;font-size:.95rem;color:#2D3748;margin-bottom:5px;">Drop your resume here</p>
+        <p style="font-size:.8rem;color:#A0AEC0;margin-bottom:12px;">or click to browse — parsing starts automatically</p>
+        <span style="font-size:.72rem;color:#CBD5E0;background:#F7FAFC;padding:3px 12px;border-radius:20px;">PDF · DOCX · DOC · TXT</span>
+      </div>
+      <input type="file" id="fi" accept=".pdf,.docx,.doc,.txt" style="display:none;" />
+
+      <!-- file row — filename + "Parsing…" status -->
+      <div id="frow" style="display:none;margin-top:10px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+          <div style="width:32px;height:32px;background:#EEF2FF;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div style="min-width:0;">
+            <p id="fname" style="font-weight:600;font-size:.825rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></p>
+            <p id="fsize" style="font-size:.72rem;color:#A0AEC0;"></p>
+          </div>
+        </div>
+        <span style="font-size:.75rem;color:#4F6EF7;font-weight:600;white-space:nowrap;">Parsing…</span>
+      </div>
+
+      <!-- animated progress bar -->
+      <div id="upload-progress">
+        <div class="bar-track"><div id="bar-fill" class="bar-fill"></div></div>
+        <p id="bar-label" class="bar-label">Starting…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOADING / STEP INDICATORS ── -->
+  <section id="sec-load" style="display:none;align-items:center;justify-content:center;">
+    <div style="text-align:center;">
+      <div class="ring" style="margin:0 auto 18px;"></div>
+      <p style="font-weight:700;font-size:1.05rem;color:#2D3748;margin-bottom:4px;">
+        Parsing resume…
+        <span id="timer" style="color:#4F6EF7;font-variant-numeric:tabular-nums;">0.0s</span>
+      </p>
+      <p id="lstep" style="font-size:.825rem;color:#A0AEC0;margin-bottom:16px;">Initialising…</p>
+      <div style="display:flex;align-items:center;gap:5px;justify-content:center;flex-wrap:wrap;">
+        <span id="st1" class="step-dot">📄 Text extraction</span>
+        <span style="color:#CBD5E0;font-size:.75rem;">→</span>
+        <span id="st2" class="step-dot">🔍 NLP pipeline</span>
+        <span style="color:#CBD5E0;font-size:.75rem;">→</span>
+        <span id="st3" class="step-dot">🧠 Entity detection</span>
+        <span style="color:#CBD5E0;font-size:.75rem;">→</span>
+        <span id="st4" class="step-dot">✅ Structuring</span>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /main -->
+
+<div id="toasts"></div>
+
+<script src="/static/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', initDropzone);
+</script>
+</body>
+</html>

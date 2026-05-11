@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeIQ — Parsed Data</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body class="fadein">
+
+<!-- ══ HEADER ══ -->
+<header style="background:#fff;border-bottom:1px solid #E2E8F0;flex-shrink:0;z-index:10;">
+  <div style="padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:30px;height:30px;background:#4F6EF7;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+          <line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
+      </div>
+      <span style="font-weight:700;font-size:1rem;color:#1A202C;">ResumeIQ</span>
+    </div>
+
+    <!-- Admin: Raw JSON + New button -->
+    <div id="result-actions" style="display:none;align-items:center;gap:8px;">
+      <span id="rmeta" style="font-size:.75rem;color:#A0AEC0;"></span>
+      <button id="btn-json" onclick="openJson()" class="btn-out"
+              disabled style="opacity:.4;cursor:not-allowed;">{ } Raw JSON</button>
+      <button onclick="goBack()" class="btn-out" style="font-size:.8rem;padding:5px 12px;">← New</button>
+    </div>
+
+    <!-- User: ✓ Parsed pill -->
+    <div id="parsed-indicator" style="display:none;align-items:center;gap:8px;">
+      <span id="rmeta2" style="font-size:.75rem;color:#A0AEC0;"></span>
+      <span style="font-size:.75rem;color:#38A169;font-weight:600;background:#F0FFF4;border:1px solid #9AE6B4;padding:3px 10px;border-radius:20px;">✓ Parsed</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MAIN ══ -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+  <section id="sec-results" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div id="split-layout">
+
+      <!-- LEFT: PDF viewer -->
+      <div id="pdf-panel">
+        <div style="padding:8px 12px;background:#1A202C;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+          <span id="pdf-label" style="font-size:.72rem;color:#A0AEC0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
+          <a id="pdf-open" href="#" target="_blank" style="font-size:.72rem;color:#68D391;text-decoration:none;white-space:nowrap;margin-left:8px;">Open ↗</a>
+        </div>
+        <iframe id="pdf-frame" src="" style="display:none;"></iframe>
+        <div id="pdf-no-preview">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4A5568" stroke-width="1.5" style="margin-bottom:12px;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+            <line x1="9" y1="17" x2="12" y2="17"/>
+          </svg>
+          <p id="no-preview-msg" style="color:#A0AEC0;font-size:.825rem;margin-bottom:8px;">Preview not available.</p>
+          <a id="dl-link" href="#" download style="font-size:.8rem;color:#4F6EF7;text-decoration:none;">⬇ Download file</a>
+        </div>
+      </div>
+
+      <!-- RESIZE HANDLE -->
+      <div id="resizer"></div>
+
+      <!-- RIGHT: Editable form -->
+      <div id="form-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <h2 style="font-size:1rem;font-weight:700;color:#1A202C;">Parsed Data</h2>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div id="autosave-status"></div>
+            <button id="btn-save-manual" class="btn-blue"
+                    style="font-size:.75rem;padding:5px 14px;"
+                    onclick="doManualSave()" title="Save (Ctrl+S)">
+              💾 Save
+            </button>
+          </div>
+        </div>
+
+        <!-- ══ PERSONAL ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Personal Information</div>
+          <div class="g2">
+            <div><label class="lbl">First Name</label>  <input id="p-fn" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div><label class="lbl">Last Name</label>   <input id="p-ln" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div id="p-mn-row" style="display:none;grid-column:1/-1;">
+              <label class="lbl">Middle Name</label>
+              <input id="p-mn" class="inp" placeholder="Middle name" oninput="scheduleAutoSave()" />
+            </div>
+            <div><label class="lbl">Email</label>  <input id="p-em" class="inp" type="email" oninput="scheduleAutoSave()" /></div>
+            <div><label class="lbl">Phone</label>  <input id="p-ph" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div><label class="lbl">City</label>   <input id="p-cy" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div><label class="lbl">State / Country</label><input id="p-cn" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div>
+              <label class="lbl">LinkedIn</label>
+              <div class="url-wrap">
+                <input id="p-li" class="inp" placeholder="https://linkedin.com/in/username"
+                       oninput="validateUrl(this,'p-li-err','p-li-link','linkedin.com');scheduleAutoSave()"
+                       onblur="validateUrl(this,'p-li-err','p-li-link','linkedin.com')" />
+                <span id="p-li-status" class="url-status"></span>
+              </div>
+              <p id="p-li-err" class="url-err"></p>
+              <p id="p-li-link" class="url-link"></p>
+            </div>
+            <div>
+              <label class="lbl">GitHub</label>
+              <div class="url-wrap">
+                <input id="p-gh" class="inp" placeholder="https://github.com/username"
+                       oninput="validateUrl(this,'p-gh-err','p-gh-link','github.com');scheduleAutoSave()"
+                       onblur="validateUrl(this,'p-gh-err','p-gh-link','github.com')" />
+                <span id="p-gh-status" class="url-status"></span>
+              </div>
+              <p id="p-gh-err" class="url-err"></p>
+              <p id="p-gh-link" class="url-link"></p>
+            </div>
+            <div><label class="lbl">Exp (yrs)</label>   <input id="p-ex" class="inp" type="number" step="0.5" min="0" oninput="scheduleAutoSave()" /></div>
+            <div><label class="lbl">Nationality</label> <input id="p-nat" class="inp" oninput="scheduleAutoSave()" /></div>
+            <div class="span2">
+              <label class="lbl">Current / Most Recent Position</label>
+              <div id="p-pos-badge" style="display:none;margin-bottom:6px;"></div>
+              <input id="p-pos" class="inp" placeholder="e.g. Senior Software Engineer" oninput="scheduleAutoSave()" />
+              <p id="p-pos-src" style="font-size:.68rem;color:#A0AEC0;margin-top:3px;"></p>
+            </div>
+            <div>
+              <label class="lbl">Current Salary (₹ per annum) <span style="color:#E53E3E;">*</span></label>
+              <div class="sal-wrap">
+                <span class="sal-prefix">₹</span>
+                <input id="p-csal" class="inp" type="text" inputmode="numeric" placeholder="e.g. 600000"
+                       oninput="validateSalary(this,'p-csal-err');clearFieldErr('p-csal','p-csal-err');scheduleAutoSave()"
+                       onblur="validateSalary(this,'p-csal-err')" />
+              </div>
+              <p id="p-csal-err" class="sal-err"></p>
+            </div>
+            <div>
+              <label class="lbl">Expected Salary (₹ per annum) <span style="color:#E53E3E;">*</span></label>
+              <div class="sal-wrap">
+                <span class="sal-prefix">₹</span>
+                <input id="p-esal" class="inp" type="text" inputmode="numeric" placeholder="e.g. 800000"
+                       oninput="validateSalary(this,'p-esal-err');clearFieldErr('p-esal','p-esal-err');scheduleAutoSave()"
+                       onblur="validateSalary(this,'p-esal-err')" />
+              </div>
+              <p id="p-esal-err" class="sal-err"></p>
+            </div>
+            <div class="span2">
+              <label class="lbl" style="margin-bottom:8px;">Notice Period <span style="color:#E53E3E;">*</span></label>
+              <div class="notice-group">
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-imm" value="Immediately" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-imm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg> Immediately</label>
+                </div>
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-15" value="Within 15 Days" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-15">Within 15 Days</label>
+                </div>
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-30" value="Within 30 Days" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-30">Within 30 Days</label>
+                </div>
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-45" value="Within 45 Days" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-45">Within 45 Days</label>
+                </div>
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-60" value="Within 60 Days" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-60">Within 60 Days</label>
+                </div>
+                <div class="notice-opt">
+                  <input type="radio" name="notice" id="np-90" value="Within 90 Days" onchange="clearNoticeErr();scheduleAutoSave()" />
+                  <label for="np-90">Within 90 Days</label>
+                </div>
+              </div>
+              <p id="notice-required-msg" style="display:none;font-size:.68rem;color:#E53E3E;margin-top:5px;font-weight:500;">✗ Please select a notice period.</p>
+              <button type="button" onclick="clearNotice()" style="margin-top:6px;font-size:.67rem;color:#A0AEC0;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Clear selection</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SUMMARY ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Summary and Objective</div>
+          <div id="sum-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <p id="sum-empty" style="font-size:.78rem;color:#A0AEC0;font-style:italic;display:none;">No summary found.</p>
+        </div>
+
+        <!-- ══ EXPERIENCE ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Work Experience <button class="btn-sm" onclick="addExp()">+ Add</button></div>
+          <div id="exp-list"></div>
+        </div>
+
+        <!-- ══ EDUCATION ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Education <button class="btn-sm" onclick="addEdu()">+ Add</button></div>
+          <div id="edu-list"></div>
+        </div>
+
+        <!-- ══ SKILLS ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">
+            <div style="display:flex;align-items:center;gap:8px;">
+              Skills
+              <span id="skill-count-badge" style="background:#EEF2FF;color:#4F6EF7;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:999px;letter-spacing:.04em;"></span>
+            </div>
+            <input id="skill-search" style="border:1px solid #E2E8F0;border-radius:5px;padding:3px 9px;font-size:.75rem;outline:none;width:130px;color:#4A5568;" placeholder="🔍 filter…" oninput="filterSkills(this.value)" />
+          </div>
+          <div id="skill-tag-cloud" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:2px 0;"></div>
+          <p id="skill-empty" style="font-size:.78rem;color:#A0AEC0;font-style:italic;display:none;padding:4px 0;">No skills detected yet.</p>
+          <div class="skill-add-row">
+            <input id="skill-in" class="inp" style="flex:1;" placeholder="Add a skill and press Enter…"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}" />
+            <button class="btn-sm" onclick="addSkill()">Add</button>
+          </div>
+        </div>
+
+        <!-- ══ PROJECTS ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Projects <button class="btn-sm" onclick="addProj()">+ Add</button></div>
+          <div id="proj-list"></div>
+        </div>
+
+        <!-- ══ CERTIFICATIONS ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Certifications <button class="btn-sm" onclick="addCert()">+ Add</button></div>
+          <div id="cert-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+
+        <!-- ══ LANGUAGES ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Languages <button class="btn-sm" onclick="addLang()">+ Add</button></div>
+          <div id="lang-list"></div>
+        </div>
+
+        <!-- ══ ACHIEVEMENTS ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:12px;">
+          <div class="sec-h">Achievements <button class="btn-sm" onclick="addAch()">+ Add</button></div>
+          <div id="ach-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+
+        <!-- ══ INTERESTS ══ -->
+        <div style="background:#fff;border:1px solid #E2E8F0;border-radius:9px;padding:16px;margin-bottom:20px;">
+          <div class="sec-h">Interests</div>
+          <textarea id="p-int" class="inp" rows="2" placeholder="e.g. Reading, Open Source, Chess…" oninput="scheduleAutoSave()"></textarea>
+        </div>
+
+      </div><!-- /form-panel -->
+    </div><!-- /split-layout -->
+  </section>
+</div><!-- /main -->
+
+<!-- JSON Modal (admin only) -->
+<div id="jmodal" class="overlay" style="display:none;" onclick="closeJson(event)">
+  <div class="dialog-box" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2D3748;flex-shrink:0;">
+      <div>
+        <span style="font-weight:600;font-size:.825rem;color:#E2E8F0;">Raw JSON</span>
+        <span style="font-size:.7rem;color:#718096;margin-left:8px;">Original parsed data · read-only</span>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <button onclick="copyJson()" style="font-size:.72rem;color:#718096;padding:2px 8px;border-radius:4px;border:1px solid #2D3748;background:transparent;cursor:pointer;">Copy</button>
+        <button onclick="closeJson()" style="color:#718096;font-size:1.1rem;line-height:1;background:none;border:none;cursor:pointer;">&times;</button>
+      </div>
+    </div>
+    <pre id="jcode"></pre>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="/static/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', initParsePage);
+</script>
+</body>
+</html>
