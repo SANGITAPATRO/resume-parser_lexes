@@ -1,4 +1,4 @@
-﻿absl-py==2.1.0
+absl-py==2.1.0
 aiofiles==25.1.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
@@ -17,7 +17,7 @@ asyncpg==0.30.0
 attrs==25.3.0
 beautifulsoup4==4.12.2
 blinker==1.4
-blis==1.3.3
+blis==1.3.0
 brotli==1.2.0
 browser-cookie3==0.20.1
 bs4==0.0.1
@@ -192,7 +192,7 @@ tensorflow==2.17.0
 tensorflow-intel==2.17.0
 tensorflow-io-gcs-filesystem==0.31.0
 termcolor==2.4.0
-thinc==8.x.x
+thinc==8.3.8
 threadpoolctl==3.5.0
 tifffile==2023.8.30
 toml==0.10.2
